@@ -18,25 +18,7 @@ import { LUZMO_DASHBOARD_CONTENTS_VERSION } from '@/lib/luzmo-embed-constants';
 import { mergeShipbobFlexOptions } from '@/lib/luzmo/flex-chart-theme';
 import { mergeFlexOptionsForStoredType, toFlexVizItemType } from '@/lib/luzmo/flex-viz-type';
 import { StackLabelBadge } from '@/components/dev/StackLabelBadge';
-
-const CHART_TYPE_ICONS: Record<string, string> = {
-  'bar-chart': '📊',
-  'line-chart': '📈',
-  'area-chart': '📉',
-  'donut-chart': '🍩',
-  'pie-chart': '🥧',
-  'evolution-number': '📌',
-  'column-chart': '📊',
-  'data-chart': '📊',
-  'scatter-plot': '⚡',
-  'heat-map': '🌡',
-  'regular-table': '📋',
-  'bubble-chart': '🫧',
-  'treemap-chart': '🌳',
-  'sunburst-chart': '☀️',
-  'circle-pack-chart': '⭕',
-  'pivot-table': '📑',
-};
+import { ChartTypeIcon } from '@/components/charts/ChartTypeIcon';
 
 interface WorkbookCanvasProps {
   items: CanvasItemDefinition[];
@@ -106,7 +88,7 @@ function FlexVizItem({
   if (!authKey || !authToken || !item.slots || item.slots.length === 0) {
     return (
       <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50/50">
-        <span className="text-3xl mb-2">{CHART_TYPE_ICONS[item.type] || '📊'}</span>
+        <ChartTypeIcon chartType={item.type} className="w-12 h-12 mb-2 text-gray-400" />
         <p className="text-xs text-gray-400 text-center">
           {!authKey ? 'Waiting for authentication...' : 'No slot data configured'}
         </p>
@@ -246,7 +228,7 @@ export default function WorkbookCanvas({
                   <circle cx="9" cy="12" r="1.5" /><circle cx="15" cy="12" r="1.5" />
                   <circle cx="9" cy="19" r="1.5" /><circle cx="15" cy="19" r="1.5" />
                 </svg>
-                <span className="text-xs flex-shrink-0">{CHART_TYPE_ICONS[item.type] || '📊'}</span>
+                <ChartTypeIcon chartType={item.type} className="w-3.5 h-3.5 flex-shrink-0 text-gray-400" />
                 <h4 className="text-xs font-semibold text-gray-700 truncate">{item.title}</h4>
               </div>
               {!viewMode && (
@@ -297,7 +279,7 @@ export default function WorkbookCanvas({
                 />
               ) : (
                 <div className="h-full flex flex-col items-center justify-center p-6 bg-gray-50/50">
-                  <span className="text-2xl mb-2">{CHART_TYPE_ICONS[item.type] || '📊'}</span>
+                  <ChartTypeIcon chartType={item.type} className="w-10 h-10 mb-2 text-gray-400" />
                   <p className="text-[10px] text-gray-500 text-center">
                     No chart data. Use <strong>Suggestions</strong> or <strong>Chart Data</strong> to configure slots.
                   </p>

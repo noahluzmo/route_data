@@ -36,7 +36,25 @@ luzmo-item-slot-drop-panel {
 
 luzmo-item-slot-picker-panel {
   display: block;
-  --luzmo-item-slot-picker-panel-gap: 8px;
+  --luzmo-item-slot-picker-panel-gap: 10px;
+  --luzmo-item-slot-picker-panel-slot-gap: 6px;
+  --luzmo-item-slot-picker-panel-dataset-picker-border-width: 0;
+  --luzmo-item-slot-picker-panel-dataset-picker-border-color: transparent;
+  --luzmo-item-slot-picker-panel-dataset-picker-margin-block-end: 0;
+  --luzmo-item-slot-picker-panel-dataset-picker-padding-block-end: 0;
+}
+
+/* Cohesive chart config: match app typography; picker buttons use --luzmo-border-width for outline. */
+.chart-config-panel-luzmo {
+  --luzmo-font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  --luzmo-font-color: #374151;
+  --luzmo-font-size: 0.8125rem;
+  --luzmo-border-width: 0;
+  --luzmo-border-color: transparent;
+  --luzmo-border-color-full: transparent;
+  --luzmo-background-color: #f9fafb;
+  --luzmo-background-color-hover: #f3f4f6;
+  --luzmo-background-color-down: #e5e7eb;
 }
 
 luzmo-item-option-panel {

@@ -17,6 +17,12 @@ import { FIELD_GROUPS, FILTER_EXAMPLES } from '@/lib/domain/routedata';
 import { getApiHost, getAppServer } from '@/lib/services/luzmo-service';
 import { LUZMO_DASHBOARD_CONTENTS_VERSION } from '@/lib/luzmo-embed-constants';
 import { mergeShipbobFlexOptions } from '@/lib/luzmo/flex-chart-theme';
+import {
+  FLEX_CHART_TYPES,
+  chartUsesColorByCategory,
+  flexChartTypeLabel,
+} from '@/lib/luzmo/flex-chart-types';
+import { slotsForChartTypeChange } from '@/lib/luzmo/flex-slot-contents';
 import { mergeFlexOptionsForStoredType, toFlexVizItemType } from '@/lib/luzmo/flex-viz-type';
 import { enrichSlotsWithFieldLabels } from '@/lib/luzmo/enrich-slot-labels';
 import { ChartTypeIcon } from '@/components/charts/ChartTypeIcon';
@@ -25,114 +31,9 @@ import { StackLabelBadge } from '@/components/dev/StackLabelBadge';
 
 type RightPanelTab = 'chart-config' | 'filters' | 'chart-options' | 'suggestions';
 
-const CHART_TYPES = [
-  'bar-chart',
-  'line-chart',
-  'area-chart',
-  'donut-chart',
-  'pie-chart',
-  'column-chart',
-  'evolution-number',
-  'scatter-plot',
-  'heat-map',
-  'regular-table',
-];
-
-const CHART_TYPE_LABEL: Record<string, string> = Object.fromEntries(
-  CHART_TYPES.map((ct) => [ct, ct.replace(/-/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())])
-);
-
-type SlotLike = { name?: string; content?: unknown[] };
-
-function targetSlotOrderForType(chartType: string): string[] {
-  switch (chartType) {
-    case 'line-chart':
-    case 'area-chart':
-    case 'column-chart':
-      return ['x-axis', 'measure', 'legend'];
-    case 'bar-chart':
-      return ['y-axis', 'measure', 'legend'];
-    case 'donut-chart':
-    case 'pie-chart':
-      return ['category', 'measure', 'legend'];
-    case 'scatter-plot':
-      return ['x-axis', 'y-axis', 'color'];
-    case 'heat-map':
-      return ['x-axis', 'y-axis', 'measure'];
-    case 'evolution-number':
-      return ['measure'];
-    case 'regular-table':
-      return ['measure', 'category'];
-    default:
-      return ['measure', 'category', 'legend'];
-  }
-}
-
-function remapSlotsForChartType(nextType: string, prevSlots: unknown[]): unknown[] {
-  const prev = (prevSlots || []) as SlotLike[];
-  const byName = new Map<string, SlotLike>();
-  for (const s of prev) {
-    if (typeof s?.name === 'string') byName.set(s.name, s);
-  }
-
-  const categorySlot =
-    byName.get('category') ||
-    byName.get('x-axis') ||
-    byName.get('y-axis');
-  const measureSlot = byName.get('measure');
-  const legendSlot = byName.get('legend') || byName.get('group-by') || byName.get('color');
-  const ySlot = byName.get('y-axis');
-  const xSlot = byName.get('x-axis');
-  const colorSlot = byName.get('color');
-
-  const targetOrder = targetSlotOrderForType(nextType);
-  const mapped: SlotLike[] = [];
-
-  for (const target of targetOrder) {
-    if (target === 'measure' && measureSlot?.content?.length) {
-      mapped.push({ name: 'measure', content: measureSlot.content });
-      continue;
-    }
-    if (target === 'x-axis') {
-      const source = xSlot?.content?.length ? xSlot : categorySlot;
-      if (source?.content?.length) mapped.push({ name: 'x-axis', content: source.content });
-      continue;
-    }
-    if (target === 'y-axis') {
-      const source = ySlot?.content?.length ? ySlot : categorySlot;
-      if (source?.content?.length) mapped.push({ name: 'y-axis', content: source.content });
-      continue;
-    }
-    if (target === 'category') {
-      const source = categorySlot || xSlot || ySlot;
-      if (source?.content?.length) mapped.push({ name: 'category', content: source.content });
-      continue;
-    }
-    if (target === 'legend') {
-      if (legendSlot?.content?.length) mapped.push({ name: 'legend', content: legendSlot.content });
-      continue;
-    }
-    if (target === 'color') {
-      const source = colorSlot || legendSlot;
-      if (source?.content?.length) mapped.push({ name: 'color', content: source.content });
-      continue;
-    }
-  }
-
-  return mapped as unknown[];
-}
-
 function withChartTypeDefaults(chartType: string, options: Record<string, unknown>): Record<string, unknown> {
   const next = { ...(options || {}) };
-  const colorByCategoryTypes = new Set([
-    'bar-chart',
-    'column-chart',
-    'donut-chart',
-    'pie-chart',
-    'bubble-chart',
-    'wordcloud-chart',
-  ]);
-  if (colorByCategoryTypes.has(chartType)) {
+  if (chartUsesColorByCategory(chartType)) {
     next.categories = {
       ...((next.categories as Record<string, unknown>) ?? {}),
       // ACK/Luzmo option key for "color by category"
@@ -143,15 +44,7 @@ function withChartTypeDefaults(chartType: string, options: Record<string, unknow
 }
 
 function withPreviewColorByCategory(chartType: string, options: Record<string, unknown>): Record<string, unknown> {
-  const colorByCategoryTypes = new Set([
-    'bar-chart',
-    'column-chart',
-    'donut-chart',
-    'pie-chart',
-    'bubble-chart',
-    'wordcloud-chart',
-  ]);
-  if (!colorByCategoryTypes.has(chartType)) return options;
+  if (!chartUsesColorByCategory(chartType)) return options;
   return {
     ...options,
     categories: {
@@ -234,7 +127,13 @@ function BuilderChartPreview({
     );
   }
 
-  if (!slots || slots.length === 0) {
+  const hasAnySlotContent =
+    Array.isArray(slots) &&
+    slots.some((s) => {
+      const row = s as { content?: unknown[] };
+      return Array.isArray(row?.content) && row.content.length > 0;
+    });
+  if (!hasAnySlotContent) {
     return (
       <div className="h-full flex items-center justify-center text-[11px] text-gray-400 px-4 text-center">
         Add fields to chart slots to see a live preview.
@@ -308,7 +207,7 @@ export default function StepDashboardBuilder({
   /** When set, Chart Data applies to this canvas item; when null, "Add" creates a new one. */
   const [builderTargetId, setBuilderTargetId] = useState<string | null>(null);
   const [chartBuilderType, setChartBuilderType] = useState('bar-chart');
-  const [chartBuilderSlots, setChartBuilderSlots] = useState<unknown[]>([]);
+  const [chartBuilderSlots, setChartBuilderSlots] = useState<unknown[]>(() => slotsForChartTypeChange('bar-chart', []));
   const [chartBuilderOptions, setChartBuilderOptions] = useState<Record<string, unknown>>({});
   // Legacy/default layout state preserved (both side panels open) for easy rollback.
   const [rightPanelCollapsed, setRightPanelCollapsed] = useState(false);
@@ -328,7 +227,7 @@ export default function StepDashboardBuilder({
     setBuilderTargetId(null);
     setEditingItem(null);
     setChartBuilderType('bar-chart');
-    setChartBuilderSlots([]);
+    setChartBuilderSlots(slotsForChartTypeChange('bar-chart', []));
     setChartBuilderOptions({});
   }, []);
 
@@ -336,7 +235,9 @@ export default function StepDashboardBuilder({
     setEditingItem(item);
     setBuilderTargetId(item.id);
     setChartBuilderType(item.type);
-    setChartBuilderSlots(enrichSlotsWithFieldLabels(item.slots as unknown[], selectedFields));
+    setChartBuilderSlots(
+      enrichSlotsWithFieldLabels(slotsForChartTypeChange(item.type, item.slots ?? []), selectedFields)
+    );
     setChartBuilderOptions(item.options);
     setRightTab('chart-config');
   }, [selectedFields]);
@@ -345,7 +246,9 @@ export default function StepDashboardBuilder({
     setEditingItem(item);
     setBuilderTargetId(item.id);
     setChartBuilderType(item.type);
-    setChartBuilderSlots(enrichSlotsWithFieldLabels(item.slots as unknown[], selectedFields));
+    setChartBuilderSlots(
+      enrichSlotsWithFieldLabels(slotsForChartTypeChange(item.type, item.slots ?? []), selectedFields)
+    );
     setChartBuilderOptions(item.options);
     setRightTab('chart-options');
   }, [selectedFields]);
@@ -354,7 +257,7 @@ export default function StepDashboardBuilder({
     (nextType: string) => {
       if (!editingItem) return;
       const currentSlots = (editingItem.slots ?? []) as unknown[];
-      const remappedSlots = remapSlotsForChartType(nextType, currentSlots);
+      const remappedSlots = slotsForChartTypeChange(nextType, currentSlots);
       const enriched = enrichSlotsWithFieldLabels(remappedSlots, selectedFields);
       onUpdateCanvasItem(editingItem.id, {
         type: nextType,
@@ -625,8 +528,8 @@ export default function StepDashboardBuilder({
                 <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
                   Chart type
                 </label>
-                <div className="grid grid-cols-5 gap-2">
-                  {CHART_TYPES.map((ct) => {
+                <div className="grid grid-cols-6 gap-2 max-h-[5rem] overflow-y-auto overflow-x-hidden pr-0.5 [scrollbar-gutter:stable]">
+                  {FLEX_CHART_TYPES.map((ct) => {
                     const active = chartBuilderType === ct;
                     return (
                       <button
@@ -634,11 +537,11 @@ export default function StepDashboardBuilder({
                         type="button"
                         onClick={() => {
                           setChartBuilderType(ct);
-                          setChartBuilderSlots((prev) => remapSlotsForChartType(ct, prev));
+                          setChartBuilderSlots((prev) => slotsForChartTypeChange(ct, prev));
                           setChartBuilderOptions((prev) => withChartTypeDefaults(ct, prev));
                         }}
-                        aria-label={CHART_TYPE_LABEL[ct] || ct}
-                        title={CHART_TYPE_LABEL[ct] || ct}
+                        aria-label={flexChartTypeLabel(ct)}
+                        title={flexChartTypeLabel(ct)}
                         className={`h-9 rounded-lg border flex items-center justify-center transition-colors ${
                           active
                             ? 'bg-green-50 border-green-300 text-green-700'
@@ -657,47 +560,42 @@ export default function StepDashboardBuilder({
               </p>
 
               {embedReadyForDataset ? (
-                <ChartConfigPanel
-                  authKey={authKey}
-                  authToken={authToken}
-                  datasetId={datasetId}
-                  itemType={toFlexVizItemType(chartBuilderType)}
-                  slotsContents={chartBuilderSlots}
-                  onSlotsContentsChanged={(slots) =>
-                    setChartBuilderSlots(enrichSlotsWithFieldLabels(slots, selectedFields))
-                  }
-                  mode="picker"
-                  restrictToFields={selectedFields}
-                  datasetName={datasetName}
-                  onDatasetChanged={onDatasetChanged}
-                />
+                <div className="chart-config-panel-luzmo rounded-xl bg-white p-4 shadow-sm">
+                  <ChartConfigPanel
+                    authKey={authKey}
+                    authToken={authToken}
+                    datasetId={datasetId}
+                    itemType={toFlexVizItemType(chartBuilderType)}
+                    slotsContents={chartBuilderSlots}
+                    onSlotsContentsChanged={(slots) =>
+                      setChartBuilderSlots(enrichSlotsWithFieldLabels(slots, selectedFields))
+                    }
+                    mode="picker"
+                    restrictToFields={selectedFields}
+                    datasetName={datasetName}
+                    onDatasetChanged={onDatasetChanged}
+                  />
+                  <div className="mt-6">
+                    <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-3">
+                      Live preview
+                    </p>
+                    <div className="min-h-[280px] h-[min(40vh,320px)] rounded-lg overflow-hidden bg-gray-50/60">
+                      <BuilderChartPreview
+                        authKey={authKey}
+                        authToken={authToken}
+                        chartType={chartBuilderType}
+                        slots={chartBuilderSlots}
+                        options={chartBuilderOptions}
+                        title={flexChartTypeLabel(chartBuilderType)}
+                      />
+                    </div>
+                  </div>
+                </div>
               ) : (
                 <p className="text-xs text-sky-900/90 rounded-lg border border-sky-200 bg-sky-50/80 p-3">
                   Chart Data slots load after the Luzmo embed token is minted for this dataset (see banner above).
                 </p>
               )}
-
-              <div className="rounded-lg border border-gray-200 bg-white overflow-hidden">
-                <div className="px-3 py-2 border-b border-gray-100">
-                  <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider">Live Preview</p>
-                </div>
-                <div className="min-h-[280px] h-[min(40vh,320px)]">
-                  {embedReadyForDataset ? (
-                    <BuilderChartPreview
-                      authKey={authKey}
-                      authToken={authToken}
-                      chartType={chartBuilderType}
-                      slots={chartBuilderSlots}
-                      options={chartBuilderOptions}
-                      title={CHART_TYPE_LABEL[chartBuilderType] || chartBuilderType}
-                    />
-                  ) : (
-                    <div className="h-full flex items-center justify-center text-[11px] text-gray-400 px-4 text-center">
-                      Preview loads after dataset-scoped embed auth is ready.
-                    </div>
-                  )}
-                </div>
-              </div>
 
               <button
                 type="button"
@@ -742,16 +640,16 @@ export default function StepDashboardBuilder({
                   <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">
                     Chart Type
                   </label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {CHART_TYPES.map((ct) => {
+                  <div className="grid grid-cols-6 gap-2 max-h-[5rem] overflow-y-auto overflow-x-hidden pr-0.5 [scrollbar-gutter:stable]">
+                    {FLEX_CHART_TYPES.map((ct) => {
                       const active = editingItem.type === ct;
                       return (
                         <button
                           key={ct}
                           type="button"
                           onClick={() => handleEditingItemTypeChange(ct)}
-                          aria-label={CHART_TYPE_LABEL[ct] || ct}
-                          title={CHART_TYPE_LABEL[ct] || ct}
+                          aria-label={flexChartTypeLabel(ct)}
+                          title={flexChartTypeLabel(ct)}
                           className={`h-9 rounded-lg border flex items-center justify-center transition-colors ${
                             active
                               ? 'bg-green-50 border-green-300 text-green-700'

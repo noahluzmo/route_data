@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useRef, useEffect, useMemo } from 'react';
+import React, { useRef, useEffect, useMemo, useCallback } from 'react';
 import '@luzmo/analytics-components-kit/item-slot-drop-panel';
 import '@luzmo/analytics-components-kit/item-slot-picker-panel';
 import { getApiHost } from '@/lib/services/luzmo-service';
 import type { FieldMetadata } from '@/lib/types';
 import { buildWorkbookDatasetsDataFields } from '@/lib/luzmo/workbook-dataset-fields';
 import { StackLabelBadge } from '@/components/dev/StackLabelBadge';
+
+const SLOT_PICKER_PLACEHOLDER = 'Select Field';
 
 interface ChartConfigPanelProps {
   authKey: string;
@@ -20,6 +22,18 @@ interface ChartConfigPanelProps {
   restrictToFields?: FieldMetadata[];
   datasetName?: string;
   onDatasetChanged?: (datasetId: string) => void;
+}
+
+function applySlotPickerPlaceholders(panelEl: HTMLElement) {
+  const shadow = panelEl.shadowRoot;
+  if (!shadow) return;
+  shadow.querySelectorAll('luzmo-item-slot-picker').forEach((picker) => {
+    try {
+      (picker as HTMLElement & { placeholder?: string }).placeholder = SLOT_PICKER_PLACEHOLDER;
+    } catch {
+      /* ignore */
+    }
+  });
 }
 
 export function ChartConfigPanel({
@@ -43,6 +57,14 @@ export function ChartConfigPanel({
         : null,
     [mode, datasetId, datasetName, restrictToFields]
   );
+
+  const schedulePlaceholderSync = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    applySlotPickerPlaceholders(el);
+    window.setTimeout(() => applySlotPickerPlaceholders(el), 50);
+    window.setTimeout(() => applySlotPickerPlaceholders(el), 300);
+  }, []);
 
   useEffect(() => {
     const el = ref.current;
@@ -98,6 +120,23 @@ export function ChartConfigPanel({
     (el as HTMLElement & { slotsContents?: unknown[] }).slotsContents = slotsContents;
   }, [slotsContents]);
 
+  /** ACK defaults to msg("Select..."); set placeholder on nested slot pickers when the panel renders. */
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    schedulePlaceholderSync();
+    const sr = el.shadowRoot;
+    const obs =
+      sr &&
+      new MutationObserver(() => {
+        schedulePlaceholderSync();
+      });
+    if (sr && obs) {
+      obs.observe(sr, { childList: true, subtree: true });
+    }
+    return () => obs?.disconnect();
+  }, [itemType, slotsContents, mode, schedulePlaceholderSync]);
+
   const commonProps = {
     ref,
     'auth-key': authKey,
@@ -117,7 +156,7 @@ export function ChartConfigPanel({
 
   return (
     <StackLabelBadge
-      className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm"
+      className="rounded-xl border-0 bg-transparent p-0 shadow-none"
       label={ackLabel}
       description={slotDescription}
       title="Luzmo Analytics Components Kit — chart slot configuration (drop vs picker mode)"

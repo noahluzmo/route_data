@@ -1,91 +1,215 @@
 'use client';
 
 import React from 'react';
+import type { IconDefinition } from '@luzmo/icons';
+import {
+  luzmoAlluvialDiagram,
+  luzmoAreaChart,
+  luzmoAreaChart100,
+  luzmoAreaChartSimple,
+  luzmoAreaChartStacked,
+  luzmoAreaChartStream,
+  luzmoBarChart,
+  luzmoBarChartGrouped,
+  luzmoBarChartSimple,
+  luzmoBarChartStacked,
+  luzmoBoxPlot,
+  luzmoBoxPlotWidth,
+  luzmoBubbleChart,
+  luzmoBubbleChartSimple,
+  luzmoBulletChart,
+  luzmoCandlestickChart,
+  luzmoChoroplethMap,
+  luzmoCirclePackChart,
+  luzmoCircularGauge,
+  luzmoColumnChart,
+  luzmoColumnChartGrouped,
+  luzmoColumnChartSimple,
+  luzmoColumnChartStacked,
+  luzmoCombinationChart,
+  luzmoConditionalNumber,
+  luzmoDonutChart,
+  luzmoDonutChartHalf,
+  luzmoDonutChartSimple,
+  luzmoEvolutionNumber,
+  luzmoEvolutionNumberSimple,
+  luzmoFunnelChart,
+  luzmoFunnelChartSimple,
+  luzmoHeatMap,
+  luzmoHeatTable,
+  luzmoHexbinMap,
+  luzmoKagiChart,
+  luzmoLineChart,
+  luzmoLineChartColor,
+  luzmoLineChartForecast,
+  luzmoLineChartGrouped,
+  luzmoLineChartMultiples,
+  luzmoLineChartSimple,
+  luzmoMarkerMap,
+  luzmoOhlcChart,
+  luzmoParallelCoordinatesPlot,
+  luzmoPieChart,
+  luzmoPieChartHalf,
+  luzmoPieChartSimple,
+  luzmoPivotTable,
+  luzmoPivotTableSimple,
+  luzmoPyramidChart,
+  luzmoRadarChart,
+  luzmoRegularTable,
+  luzmoRegularTableSimple,
+  luzmoRouteMap,
+  luzmoSankeyDiagram,
+  luzmoScatterPlot,
+  luzmoScatterPlotBubble,
+  luzmoScatterPlotBubbleGrouped,
+  luzmoScatterPlotGrouped,
+  luzmoScatterPlotMultiples,
+  luzmoSpeedometerChart,
+  luzmoSpikeMap,
+  luzmoStripPlot,
+  luzmoSunburstChart,
+  luzmoSymbolMap,
+  luzmoTreemapChart,
+  luzmoTreemapChartSimple,
+  luzmoVennDiagram,
+  luzmoWaterfallChart,
+  luzmoWordCloudChart,
+  luzmoChartBar,
+} from '@luzmo/icons';
 
-/** Small SVG by Luzmo Flex chart type id (bar-chart, line-chart, …). */
-export function ChartTypeIcon({ chartType, className = 'w-4 h-4' }: { chartType: string; className?: string }) {
-  switch (chartType) {
-    case 'line-chart':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <path d="M3 17l6-6 4 4 8-10" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      );
-    case 'area-chart':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-          <path d="M4 19V5l6 6 4-4 6 6v6H4z" opacity="0.95" />
-        </svg>
-      );
-    case 'column-chart':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-          <rect x="4" y="11" width="3.5" height="9" rx="1" />
-          <rect x="10" y="7" width="3.5" height="13" rx="1" />
-          <rect x="16" y="10" width="3.5" height="10" rx="1" />
-        </svg>
-      );
-    case 'bar-chart':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-          <rect x="4" y="4" width="12" height="3" rx="1" />
-          <rect x="4" y="10.5" width="16" height="3" rx="1" />
-          <rect x="4" y="17" width="9" height="3" rx="1" />
-        </svg>
-      );
-    case 'donut-chart':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <circle cx="12" cy="12" r="8" />
-          <circle cx="12" cy="12" r="4" fill="currentColor" stroke="none" />
-        </svg>
-      );
-    case 'pie-chart':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <circle cx="12" cy="12" r="8" />
-          <path d="M12 4a8 8 0 018 8h-8V4z" fill="currentColor" stroke="none" />
-        </svg>
-      );
-    case 'evolution-number':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <rect x="6" y="4" width="12" height="16" rx="3" />
-          <path d="M9.2 16.2c.6 0 1.1-.5 1.1-1.1 0-.6-.5-1.1-1.1-1.1h-1" />
-          <path d="M14 7h2" />
-          <path d="M13 16.2h3" />
-        </svg>
-      );
-    case 'scatter-plot':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <circle cx="6" cy="18" r="1.5" />
-          <circle cx="10" cy="13" r="1.5" />
-          <circle cx="14" cy="9" r="1.5" />
-          <circle cx="18" cy="12" r="1.5" />
-          <path d="M4 20L20 8" strokeLinecap="round" />
-        </svg>
-      );
-    case 'heat-map':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M9 18l-6 3 1-7 7-9 7 9 1 7-6-3" />
-          <path d="M12 14c1.7 0 3-1.3 3-3s-1.3-3-3-3-3 1.3-3 3 1.3 3 3 3z" />
-          <circle cx="12" cy="11" r="1" fill="currentColor" stroke="none" />
-        </svg>
-      );
-    case 'regular-table':
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <rect x="4" y="5" width="16" height="14" rx="2" />
-          <path d="M4 10h16M10 5v14" strokeLinecap="round" />
-        </svg>
-      );
-    default:
-      return (
-        <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-          <rect x="4" y="4" width="16" height="16" rx="3" />
-        </svg>
-      );
+/** Maps Flex chart type id → icon; explicit so variants with duplicate `.name` in the icons bundle still resolve. */
+const CHART_TYPE_ICONS: Record<string, IconDefinition> = {
+  'alluvial-diagram': luzmoAlluvialDiagram,
+  'area-chart': luzmoAreaChart,
+  'area-chart-100': luzmoAreaChart100,
+  'area-chart-simple': luzmoAreaChartSimple,
+  'area-chart-stacked': luzmoAreaChartStacked,
+  'area-chart-stream': luzmoAreaChartStream,
+  'bar-chart': luzmoBarChart,
+  'bar-chart-grouped': luzmoBarChartGrouped,
+  'bar-chart-simple': luzmoBarChartSimple,
+  'bar-chart-stacked': luzmoBarChartStacked,
+  'box-plot': luzmoBoxPlot,
+  'box-plot-width': luzmoBoxPlotWidth,
+  'bubble-chart': luzmoBubbleChart,
+  'bubble-chart-simple': luzmoBubbleChartSimple,
+  'bullet-chart': luzmoBulletChart,
+  candlestick: luzmoCandlestickChart,
+  'choropleth-map': luzmoChoroplethMap,
+  'circle-pack-chart': luzmoCirclePackChart,
+  'circular-gauge': luzmoCircularGauge,
+  'column-chart': luzmoColumnChart,
+  'column-chart-grouped': luzmoColumnChartGrouped,
+  'column-chart-simple': luzmoColumnChartSimple,
+  'column-chart-stacked': luzmoColumnChartStacked,
+  'combination-chart': luzmoCombinationChart,
+  'conditional-number': luzmoConditionalNumber,
+  'donut-chart': luzmoDonutChart,
+  'donut-chart-simple': luzmoDonutChartSimple,
+  'donut-chart-half': luzmoDonutChartHalf,
+  'evolution-number': luzmoEvolutionNumber,
+  'evolution-number-simple': luzmoEvolutionNumberSimple,
+  'funnel-chart': luzmoFunnelChart,
+  'funnel-chart-simple': luzmoFunnelChartSimple,
+  'half-donut-chart': luzmoDonutChartHalf,
+  'half-pie': luzmoPieChartHalf,
+  'heat-map': luzmoHeatMap,
+  'heat-table': luzmoHeatTable,
+  'hexbin-map': luzmoHexbinMap,
+  'kagi-chart': luzmoKagiChart,
+  'line-chart': luzmoLineChart,
+  'line-chart-color': luzmoLineChartColor,
+  'line-chart-forecast': luzmoLineChartForecast,
+  'line-chart-grouped': luzmoLineChartGrouped,
+  'line-chart-multiples': luzmoLineChartMultiples,
+  'line-chart-simple': luzmoLineChartSimple,
+  'marker-map': luzmoMarkerMap,
+  'ohlc-chart': luzmoOhlcChart,
+  'parallel-coordinates-plot': luzmoParallelCoordinatesPlot,
+  'pie-chart': luzmoPieChart,
+  'pie-chart-simple': luzmoPieChartSimple,
+  'pivot-table': luzmoPivotTable,
+  'pivot-table-simple': luzmoPivotTableSimple,
+  'pyramid-chart': luzmoPyramidChart,
+  'radar-chart': luzmoRadarChart,
+  'regular-table': luzmoRegularTable,
+  'regular-table-simple': luzmoRegularTableSimple,
+  'route-map': luzmoRouteMap,
+  'sankey-diagram': luzmoSankeyDiagram,
+  'scatter-plot': luzmoScatterPlot,
+  'scatter-plot-bubble': luzmoScatterPlotBubble,
+  'scatter-plot-bubble-grouped': luzmoScatterPlotBubbleGrouped,
+  'scatter-plot-grouped': luzmoScatterPlotGrouped,
+  'scatter-plot-multiples': luzmoScatterPlotMultiples,
+  'speedometer-chart': luzmoSpeedometerChart,
+  'spike-map': luzmoSpikeMap,
+  'strip-plot': luzmoStripPlot,
+  'sunburst-chart': luzmoSunburstChart,
+  'symbol-map': luzmoSymbolMap,
+  'treemap-chart': luzmoTreemapChart,
+  'treemap-chart-simple': luzmoTreemapChartSimple,
+  'venn-diagram': luzmoVennDiagram,
+  'waterfall-chart': luzmoWaterfallChart,
+  'word-cloud-chart': luzmoWordCloudChart,
+  /** Legacy alias */
+  'wordcloud-chart': luzmoWordCloudChart,
+};
+
+function pathsFromDefinition(def: IconDefinition): { w: number; h: number; paths: string[]; colors?: string[] } {
+  const tuple = def.icon;
+  const w = tuple[0];
+  const h = tuple[1];
+  const rawPaths = tuple[2];
+  const paths = typeof rawPaths === 'string' ? [rawPaths] : rawPaths;
+  const rawColors = tuple[3];
+  const colors =
+    rawColors === undefined ? undefined : typeof rawColors === 'string' ? [rawColors] : rawColors;
+  return { w, h, paths, colors };
+}
+
+function fillForToken(token: string | undefined, index: number): { fill: string; fillOpacity?: number } {
+  if (!token || token === 'currentColor') {
+    return { fill: 'currentColor' };
   }
+  if (token.includes('--luzmo-icon-line-color')) {
+    return { fill: 'currentColor', fillOpacity: 0.35 };
+  }
+  if (token.includes('--luzmo-icon-color-2')) {
+    return { fill: 'currentColor', fillOpacity: 0.85 };
+  }
+  if (token.includes('--luzmo-icon-color-1')) {
+    return { fill: 'currentColor' };
+  }
+  if (token.includes('--luzmo-black')) {
+    return { fill: 'currentColor' };
+  }
+  if (token.includes('--luzmo-yellow')) {
+    return { fill: 'currentColor', fillOpacity: 0.75 };
+  }
+  if (token.startsWith('var(')) {
+    return { fill: 'currentColor', fillOpacity: index === 0 ? 0.4 : 1 };
+  }
+  return { fill: token };
+}
+
+/** Renders Luzmo Flex chart type icons from `@luzmo/icons` (matches item `name`, e.g. `bar-chart`). */
+export function ChartTypeIcon({ chartType, className = 'w-4 h-4' }: { chartType: string; className?: string }) {
+  const def = CHART_TYPE_ICONS[chartType] ?? luzmoChartBar;
+  const { w, h, paths, colors } = pathsFromDefinition(def);
+
+  return (
+    <svg
+      className={className}
+      viewBox={`0 0 ${w} ${h}`}
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden
+    >
+      {paths.map((d, i) => {
+        const token = colors?.[i];
+        const { fill, fillOpacity } = fillForToken(token, i);
+        return <path key={i} d={d} fill={fill} fillOpacity={fillOpacity} />;
+      })}
+    </svg>
+  );
 }
